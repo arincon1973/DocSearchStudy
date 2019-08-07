@@ -4,6 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+/*
+ * A class to create and access a suffix array
+ *
+ * @author      Adriana Rincon
+ * */
+
 public class SuffixArray
 {
     private String[] text;
@@ -11,6 +17,12 @@ public class SuffixArray
     private int[] index;
     private String[] suffix;
 
+    /**
+     * Constructor
+     *
+     * @param  text
+     *         Text used to create the suffix array
+     */
     public SuffixArray(String text)
     {
         this.text = new String[text.length()];
@@ -30,6 +42,9 @@ public class SuffixArray
         suffix = new String[length];
     }
 
+    /**
+     * Populates the suffix array
+     */
     public void createSuffixArray()
     {
         for(int index = 0; index < length; index++)
@@ -45,17 +60,13 @@ public class SuffixArray
     }
 
 
-    public static void main(String...arg)throws IOException
-    {
-        String text = "";
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Enter the Text String ");
-        text = reader.readLine();
-
-        SuffixArray suffixarray = new SuffixArray(text);
-        suffixarray.createSuffixArray();
-    }
-
+    /**
+     * Generate random string
+     *
+     * @param  searchTerm
+     *         String to look for in the suffix array
+     * @return  Number of occurrences of a pattern in the string
+     */
     public int search(String searchTerm) {
         if (searchTerm == null || searchTerm.length() == 0) {
             return 0;

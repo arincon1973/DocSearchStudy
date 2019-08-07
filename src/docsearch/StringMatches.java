@@ -1,7 +1,7 @@
 package docsearch;
 
 /**
- * Created by Adriana on 1/6/19.
+ * Created by Adriana on 8/4/19.
  */
 
 import java.io.*;
@@ -11,6 +11,12 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.*;
 
+/*
+ * A class to perform string searches on files using different search algorithms.
+ *
+ * @author      Adriana Rincon
+ * */
+
 public class StringMatches
 {
     private static String[] sourceFileNames;
@@ -18,10 +24,18 @@ public class StringMatches
     private static SuffixArray[] preprocessedSources;
     private static boolean sourcesInitComplete = false;
 
-    private class SimpleStringMatcher implements StringMatcher {
+    // Private classes that implement different search methods
+    public class SimpleStringMatcher implements StringMatcher {
         @Override
         public int matchesCount(int index, String pattern) {
             String text = sources[index];
+            if (text == null || text.trim().isEmpty()) // avoid NPE's, save CPU
+                return 0;
+
+            return search(pattern, text);
+        }
+
+        public int search(String pattern, String text) {
             int occurrences = 0;
             for (int i = 0; i <= (text.length() - pattern.length()); i++)
             {
@@ -34,13 +48,17 @@ public class StringMatches
         }
     }
 
-    private class RegexStringMatcher implements StringMatcher {
+    public class RegexStringMatcher implements StringMatcher {
         @Override
         public int matchesCount(int index, String regexString) {
             String source = sources[index];
             if (source == null || source.trim().isEmpty()) // avoid NPE's, save CPU
                 return 0;
 
+            return search(regexString, source);
+        }
+
+        public int search(String regexString, String source) {
             int totalMatches = 0;
             boolean matchFound = false;
             Pattern regex = Pattern.compile(regexString);
@@ -61,15 +79,22 @@ public class StringMatches
         }
     }
 
-    private SimpleStringMatcher simpleStringMatcher = new SimpleStringMatcher();
-    private RegexStringMatcher regexStringMatcher = new RegexStringMatcher();
-    private PreprocessedStringMatcher preprocessedStringMatcher = new PreprocessedStringMatcher();
+    public SimpleStringMatcher simpleStringMatcher = new SimpleStringMatcher();
+    public RegexStringMatcher regexStringMatcher = new RegexStringMatcher();
+    public PreprocessedStringMatcher preprocessedStringMatcher = new PreprocessedStringMatcher();
 
 
-    public long simpleStringMatch(String searchTerm) throws Exception {
-        return executeMatch(this.simpleStringMatcher, searchTerm);
-    }
-
+    /**
+     * Method to execute a search over a set of files and print total matches results in order of relevance
+     *
+     * @param  stringMatcher
+     *         String matcher to use.  Defines the string matching algorithm to be used
+     * @param  searchTerm
+     *         String pattern to search in each of the files
+     * @return  Elapsed time
+     * @throws  Exception
+     *          If files to search for have not been loaded as string in class variables
+     */
     private static long executeMatch(StringMatcher stringMatcher, String searchTerm) throws Exception {
         if (sources == null) {
             System.out.println("No filenames loaded");
@@ -117,6 +142,15 @@ public class StringMatches
         return timeElapsed;
     }
 
+    /**
+     * Method to load a list of provided files into String class variables.
+     *
+     * @param  sourceFiles
+     *         Array of strings containing names of files to be loaded
+     *
+     * @throws  Exception
+     *          If no source file names are available in class variable
+     */
     public static void loadSources(String[] sourceFiles) throws Exception {
         try
         {
@@ -150,15 +184,51 @@ public class StringMatches
         }
     }
 
-
+    /**
+     * Performs search of provided pattern using the Regex matching algorithm
+     *
+     * @param  searchTerm
+     *         String pattern to search in each of the files
+     * @return  Elapsed time
+     * @throws  Exception
+     *          If files to search for have not been loaded as string in class variables
+     */
     public long regexStringMatch(String searchTerm) throws Exception {
         return executeMatch(this.regexStringMatcher, searchTerm);
     }
 
+    /**
+     * Performs search of provided pattern using the Simple Matcher algorithm
+     *
+     * @param  searchTerm
+     *         String pattern to search in each of the files
+     * @return  Elapsed time
+     * @throws  Exception
+     *          If files to search for have not been loaded as string in class variables
+     */
+    public long simpleStringMatch(String searchTerm) throws Exception {
+        return executeMatch(this.simpleStringMatcher, searchTerm);
+    }
 
+    /**
+     * Performs search of provided pattern using the Preprocessed Matcher algorithm
+     *
+     * @param  searchTerm
+     *         String pattern to search in each of the files
+     * @return  Elapsed time
+     * @throws  Exception
+     *          If files to search for have not been loaded as string in class variables
+     */
     public long preprocessedStringMatch(String searchTerm) throws Exception {
         return executeMatch(this.preprocessedStringMatcher, searchTerm);    }
 
+    /**
+     * Preprocessed a String loaded in a class array by generating a suffix tree and storing it in a class array.
+     *
+     * @param  i
+     *         Index of the string in the class array where the source test is loaded
+     *
+     */
     private static void preprocessSource(int i) {
         if (preprocessedSources[i] != null) {
             System.out.println("Preprocessing file: " + sourceFileNames[i]);
